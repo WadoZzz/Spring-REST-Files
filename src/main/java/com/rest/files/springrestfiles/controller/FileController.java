@@ -5,10 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 @RestController
+@RequestMapping(value = "file")
 public class FileController {
 
     private final FileService fileService;
@@ -18,40 +19,23 @@ public class FileController {
         this.fileService = fileService;
     }
 
-    //Single upload file
     @PostMapping(value = "/upload")
-    public ResponseEntity uploadFile(@RequestParam("file") MultipartFile file) throws IOException {
-        return fileService.uploadFile(file);
+    public ResponseEntity upload(@RequestParam("files") MultipartFile[] files) {
+        return fileService.upload(files);
     }
 
-    //Multi upload file
-    @PostMapping(value = "/uploadMulti")
-    public ResponseEntity uploadMultipleFile(@RequestParam("files") MultipartFile[] files) {
-        return fileService.uploadMultipleFile(files);
-    }
-    //Get all files
-    @GetMapping(path = "/all")
-    public ResponseEntity getAll() {
-        return fileService.getAllFiles();
+    @GetMapping(value = "/{fileName}")
+    public ResponseEntity download(HttpServletResponse response, @PathVariable("fileName") String fileName) {
+        return fileService.download(response, fileName);
     }
 
-    //Get one file
-    @GetMapping(value = "/file/{fileName:.+}")
-    public ResponseEntity get(HttpServletResponse response, @PathVariable("fileName") String fileName) {
-        return fileService.downLoadFile(response, fileName);
+    @PutMapping(value = "/{fileName}")
+    public ResponseEntity rename(@PathVariable("fileName") String file, @RequestParam String renameFile) {
+        return fileService.rename(file, renameFile);
     }
 
-    //Rename file
-    @PutMapping(value = "/file/{fileName:.+}")
-    public ResponseEntity update(@PathVariable("fileName") String file, @RequestParam String renFile) {
-        return fileService.updateUploadFile(file, renFile);
-
-    }
-
-    //Delete file
-    @DeleteMapping(value = "/file/{fileName:.+}")
+    @DeleteMapping(value = "/{fileName}")
     public ResponseEntity delete(@PathVariable("fileName") String file) {
-        return fileService.deleteUploadFile(file);
-
+        return fileService.delete(file);
     }
 }

@@ -1,114 +1,66 @@
 package com.rest.files.springrestfiles.service;
 
-import com.rest.files.springrestfiles.exception.MyFileNotFoundException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class FileServiceImpl implements FileService {
 
-    private static String UPLOADED_FOLDER = "C://uploads//";
+    @Value("${upload.path}")
+    private String uploadFolder;
 
     @Override
-    public void saveUploadedFiles(List<MultipartFile> multipartFiles) {
-        File dir = new File(UPLOADED_FOLDER);
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
+    public void save(List<MultipartFile> multipartFiles) {
         for (MultipartFile file : multipartFiles) {
-            if (file.isEmpty()) {
-                continue;
-            }
-            if (!file.isEmpty()) {
-                try {
-                    byte[] bytes = file.getBytes();
-                    File serverFile = new File(dir.getAbsolutePath() + File.separator + file.getOriginalFilename());
-                    FileOutputStream stream = new FileOutputStream(serverFile);
-                    stream.write(bytes);
-                    stream.close();
-                } catch (IOException e) {
-                    try {
-                        throw new IOException("You failed to upload " + file.getOriginalFilename() + e.getMessage());
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                }
+            File serverFile = new File(uploadFolder + File.separator + file.getOriginalFilename());
+            try (FileOutputStream stream = new FileOutputStream(serverFile)) {
+                byte[] bytes = file.getBytes();
+                stream.write(bytes);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }
 
     @Override
-    public ResponseEntity<?> getAllFiles() {
-        File dir = new File(UPLOADED_FOLDER);
-        File[] files = dir.listFiles();
-        ArrayList list = new ArrayList();
-        if (files != null) {
-            for (File file : files) {
-                list.add(file.getName());
-            }
-            return new ResponseEntity<>(list, HttpStatus.OK);
-        } else {
-            try {
-                throw new MyFileNotFoundException("Not exist files");
-            } catch (MyFileNotFoundException e) {
-                return new ResponseEntity<>(e, HttpStatus.NOT_FOUND);
-            }
-        }
-    }
-
-    @Override
-    public ResponseEntity<?> downLoadFile(HttpServletResponse response, String fileName) {
-        File file = new File(UPLOADED_FOLDER + fileName);
-        InputStream inputStream;
-        try {
-            inputStream = new BufferedInputStream(new FileInputStream(file));
-        } catch (FileNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        int copy;
-        try {
+    public ResponseEntity<?> download(HttpServletResponse response, String fileName) {
+        int copy = 0;
+        try (InputStream inputStream = new BufferedInputStream(new FileInputStream(uploadFolder + fileName))) {
             copy = FileCopyUtils.copy(inputStream, response.getOutputStream());
+        } catch (FileNotFoundException e1) {
+            return new ResponseEntity<>("File not found", HttpStatus.NOT_FOUND);
         } catch (IOException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            e.printStackTrace();
         }
         return new ResponseEntity<>(copy, HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<?> uploadFile(MultipartFile file) {
-        if (file.isEmpty()) {
-            return new ResponseEntity<>("please select a file!", HttpStatus.OK);
-        }
-        saveUploadedFiles(Collections.singletonList(file));
-        return new ResponseEntity<>("Successfully uploaded - " + file.getOriginalFilename(), HttpStatus.CREATED);
-    }
-
-    @Override
-    public ResponseEntity<?> uploadMultipleFile(MultipartFile[] files) {
+    public ResponseEntity<?> upload(MultipartFile[] files) {
         String uploadedFileName = Arrays.stream(files).map(MultipartFile::getOriginalFilename)
                 .filter(x -> !StringUtils.isEmpty(x)).collect(Collectors.joining(" , "));
         if (StringUtils.isEmpty(uploadedFileName)) {
-            return new ResponseEntity<>("please select a file!", HttpStatus.OK);
+            return new ResponseEntity<>("Please select a file!", HttpStatus.BAD_REQUEST);
         }
-        saveUploadedFiles(Arrays.asList(files));
+        save(Arrays.asList(files));
         return new ResponseEntity<>("Successfully uploaded - " + uploadedFileName, HttpStatus.CREATED);
     }
 
     @Override
-    public ResponseEntity<?> updateUploadFile(String oldFile, String newFile) {
-        File oldFile1 = new File(UPLOADED_FOLDER + oldFile);
-        File newFile2 = new File(UPLOADED_FOLDER + newFile);
+    public ResponseEntity<?> rename(String oldFile, String newFile) {
+        File oldFile1 = new File(uploadFolder + oldFile);
+        File newFile2 = new File(uploadFolder + newFile);
         if (oldFile1.renameTo(newFile2)) {
             return new ResponseEntity<>(newFile, HttpStatus.CREATED);
         } else {
@@ -117,13 +69,11 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public ResponseEntity<?> deleteUploadFile(String file) {
-        File deleteFile = new File(UPLOADED_FOLDER + file);
+    public ResponseEntity<?> delete(String file) {
+        File deleteFile = new File(uploadFolder + file);
         if (deleteFile.exists()) {
             deleteFile.delete();
         }
         return new ResponseEntity<>(deleteFile, HttpStatus.NOT_FOUND);
-
     }
-
 }
