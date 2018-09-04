@@ -5,8 +5,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
-
-public interface FileService {
+public interface IFileService {
 
     void save(List<MultipartFile> multipartFiles);
 

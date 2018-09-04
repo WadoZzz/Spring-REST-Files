@@ -1,6 +1,6 @@
 package com.rest.files.springrestfiles.controller;
 
-import com.rest.files.springrestfiles.service.FileService;
+import com.rest.files.springrestfiles.service.IFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,30 +12,42 @@ import javax.servlet.http.HttpServletResponse;
 @RequestMapping(value = "file")
 public class FileController {
 
-    private final FileService fileService;
+    private IFileService IFileService;
 
     @Autowired
-    public FileController(FileService fileService) {
-        this.fileService = fileService;
+    public FileController(IFileService IFileService) {
+        this.IFileService = IFileService;
     }
 
+    /*
+    Upload file on server
+     */
     @PostMapping(value = "/upload")
     public ResponseEntity upload(@RequestParam("files") MultipartFile[] files) {
-        return fileService.upload(files);
+        return IFileService.upload(files);
     }
 
+    /*
+     Get file from server
+      */
     @GetMapping(value = "/{fileName}")
     public ResponseEntity download(HttpServletResponse response, @PathVariable("fileName") String fileName) {
-        return fileService.download(response, fileName);
+        return IFileService.download(response, fileName);
     }
 
+    /*
+    Rename file from server
+     */
     @PutMapping(value = "/{fileName}")
     public ResponseEntity rename(@PathVariable("fileName") String file, @RequestParam String renameFile) {
-        return fileService.rename(file, renameFile);
+        return IFileService.rename(file, renameFile);
     }
 
+    /*
+   Delete file from server
+    */
     @DeleteMapping(value = "/{fileName}")
     public ResponseEntity delete(@PathVariable("fileName") String file) {
-        return fileService.delete(file);
+        return IFileService.delete(file);
     }
 }
