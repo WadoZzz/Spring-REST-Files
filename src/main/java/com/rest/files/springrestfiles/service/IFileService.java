@@ -15,5 +15,5 @@ public interface IFileService {
 
     ResponseEntity download(HttpServletResponse response, String fileName);
 
-    ResponseEntity upload(MultipartFile[] files);
+   
 }

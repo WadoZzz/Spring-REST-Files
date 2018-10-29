@@ -57,18 +57,6 @@ public class FileServiceImpl implements IFileService {
         return new ResponseEntity<>(fileName, HttpStatus.OK);
     }
 
-    @Override
-    public ResponseEntity<?> upload(MultipartFile[] files) {
-        String uploadedFileName = Arrays.stream(files).map(MultipartFile::getOriginalFilename)
-                .filter(x -> !StringUtils.isEmpty(x)).collect(Collectors.joining(" , "));
-        if (StringUtils.isEmpty(uploadedFileName)) {
-            logger.error("Please select a file!");
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-        save(Arrays.asList(files));
-        logger.info("File " + uploadedFileName + " successfully uploaded");
-        return new ResponseEntity<>(HttpStatus.CREATED);
-    }
 
     @Override
     public ResponseEntity<?> rename(String oldFile, String newFile) {
