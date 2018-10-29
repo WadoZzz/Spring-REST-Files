@@ -1,8 +1,5 @@
 package com.rest.files.springrestfiles.controller;
 
-import com.rest.files.springrestfiles.service.FileServiceImpl;
-import com.rest.files.springrestfiles.service.IFileService;
-
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,14 +30,7 @@ public class FileController {
 	@Value("${uploadPath}")
 	private String uploadFolder;
 
-	final static Logger logger = Logger.getLogger(FileServiceImpl.class);
-
-	private IFileService IFileService;
-
-	
-	public FileController(IFileService IFileService) {
-		this.IFileService = IFileService;
-	}
+	final static Logger logger = Logger.getLogger(FileController.class);
 
 	/*
 	 * Upload file on server
@@ -55,7 +45,7 @@ public class FileController {
 		}
 		save(Arrays.asList(files));
 		logger.info("File " + uploadedFileName + " successfully uploaded");
-		return new ResponseEntity<>(files, HttpStatus.CREATED);
+		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 
 	/*
