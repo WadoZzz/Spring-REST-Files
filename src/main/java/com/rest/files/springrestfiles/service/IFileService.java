@@ -13,7 +13,7 @@ public interface IFileService {
 
     ResponseEntity delete(String file);
 
-    ResponseEntity download(HttpServletResponse response, String fileName);
+   
 
    
 }

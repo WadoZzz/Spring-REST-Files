@@ -81,7 +81,15 @@ public class FileController {
 	 */
 	@PutMapping(value = "/{fileName}")
 	public ResponseEntity rename(@PathVariable("fileName") String file, @RequestParam String renameFile) {
-		return IFileService.rename(file, renameFile);
+		File oldFile1 = new File(uploadFolder + File.separator + file);
+        File newFile2 = new File(uploadFolder + File.separator + renameFile);
+        if (oldFile1.renameTo(newFile2)) {
+            logger.info("File " + file + " successfully renamed to " + renameFile);
+            return new ResponseEntity<>(HttpStatus.CREATED);
+        } else {
+            logger.error("File not exist");
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
 	}
 
 	/*

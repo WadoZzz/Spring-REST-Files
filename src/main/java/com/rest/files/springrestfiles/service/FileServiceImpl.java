@@ -42,20 +42,7 @@ public class FileServiceImpl implements IFileService {
         logger.info("File successfully saved");
     }
 
-    @Override
-    public ResponseEntity<?> download(HttpServletResponse response, String fileName) {
-        try (InputStream inputStream = new BufferedInputStream(new FileInputStream(uploadFolder + File.separator + fileName))) {
-            FileCopyUtils.copy(inputStream, response.getOutputStream());
-        } catch (FileNotFoundException e1) {
-            logger.error(e1.getMessage(), e1);
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
-            throw new RuntimeException(e);
-        }
-        logger.info("File " + fileName + " successfully downloaded");
-        return new ResponseEntity<>(fileName, HttpStatus.OK);
-    }
+ 
 
 
     @Override
