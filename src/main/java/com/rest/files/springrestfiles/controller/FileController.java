@@ -37,7 +37,7 @@ public class FileController {
 
 	private IFileService IFileService;
 
-	@Autowired
+	
 	public FileController(IFileService IFileService) {
 		this.IFileService = IFileService;
 	}
@@ -55,7 +55,7 @@ public class FileController {
 		}
 		save(Arrays.asList(files));
 		logger.info("File " + uploadedFileName + " successfully uploaded");
-		return new ResponseEntity<>(HttpStatus.CREATED);
+		return new ResponseEntity<>(files, HttpStatus.CREATED);
 	}
 
 	/*
@@ -63,17 +63,18 @@ public class FileController {
 	 */
 	@GetMapping(value = "/{fileName}")
 	public ResponseEntity download(HttpServletResponse response, @PathVariable("fileName") String fileName) {
-		try (InputStream inputStream = new BufferedInputStream(new FileInputStream(uploadFolder + File.separator + fileName))) {
-            FileCopyUtils.copy(inputStream, response.getOutputStream());
-        } catch (FileNotFoundException e1) {
-            logger.error(e1.getMessage(), e1);
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
-            throw new RuntimeException(e);
-        }
-        logger.info("File " + fileName + " successfully downloaded");
-        return new ResponseEntity<>(fileName, HttpStatus.OK);
+		try (InputStream inputStream = new BufferedInputStream(
+				new FileInputStream(uploadFolder + File.separator + fileName))) {
+			FileCopyUtils.copy(inputStream, response.getOutputStream());
+		} catch (FileNotFoundException e1) {
+			logger.error(e1.getMessage(), e1);
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		} catch (IOException e) {
+			logger.error(e.getMessage(), e);
+			throw new RuntimeException(e);
+		}
+		logger.info("File " + fileName + " successfully downloaded");
+		return new ResponseEntity<>(fileName, HttpStatus.OK);
 	}
 
 	/*
@@ -82,14 +83,14 @@ public class FileController {
 	@PutMapping(value = "/{fileName}")
 	public ResponseEntity rename(@PathVariable("fileName") String file, @RequestParam String renameFile) {
 		File oldFile1 = new File(uploadFolder + File.separator + file);
-        File newFile2 = new File(uploadFolder + File.separator + renameFile);
-        if (oldFile1.renameTo(newFile2)) {
-            logger.info("File " + file + " successfully renamed to " + renameFile);
-            return new ResponseEntity<>(HttpStatus.CREATED);
-        } else {
-            logger.error("File not exist");
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+		File newFile2 = new File(uploadFolder + File.separator + renameFile);
+		if (oldFile1.renameTo(newFile2)) {
+			logger.info("File " + file + " successfully renamed to " + renameFile);
+			return new ResponseEntity<>(HttpStatus.CREATED);
+		} else {
+			logger.error("File not exist");
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
 	}
 
 	/*
@@ -98,16 +99,19 @@ public class FileController {
 	@DeleteMapping(value = "/{fileName}")
 	public ResponseEntity delete(@PathVariable("fileName") String file) {
 		File deleteFile = new File(uploadFolder + File.separator + file);
-        if (deleteFile.exists()) {
-            deleteFile.delete();
-        } else {
-            logger.error("File " + file + " not found");
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        logger.info("File " + file + " successfully been deleted");
-        return new ResponseEntity<>(HttpStatus.OK);
+		if (deleteFile.exists()) {
+			deleteFile.delete();
+		} else {
+			logger.error("File " + file + " not found");
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+		logger.info("File " + file + " successfully been deleted");
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
+	/*
+	 * Save file on server
+	 */
 	private void save(List<MultipartFile> multipartFiles) {
 		File dir = new File(uploadFolder);
 		if (!dir.exists() && !dir.mkdirs()) {
