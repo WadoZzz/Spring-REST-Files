@@ -8,13 +8,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -51,7 +56,6 @@ public class FileController {
 		save(Arrays.asList(files));
 		logger.info("File " + uploadedFileName + " successfully uploaded");
 		return new ResponseEntity<>(HttpStatus.CREATED);
-		
 	}
 
 	/*
@@ -59,7 +63,17 @@ public class FileController {
 	 */
 	@GetMapping(value = "/{fileName}")
 	public ResponseEntity download(HttpServletResponse response, @PathVariable("fileName") String fileName) {
-		return IFileService.download(response, fileName);
+		try (InputStream inputStream = new BufferedInputStream(new FileInputStream(uploadFolder + File.separator + fileName))) {
+            FileCopyUtils.copy(inputStream, response.getOutputStream());
+        } catch (FileNotFoundException e1) {
+            logger.error(e1.getMessage(), e1);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+        logger.info("File " + fileName + " successfully downloaded");
+        return new ResponseEntity<>(fileName, HttpStatus.OK);
 	}
 
 	/*
