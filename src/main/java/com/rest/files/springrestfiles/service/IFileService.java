@@ -7,11 +7,11 @@ import java.util.List;
 
 public interface IFileService {
 
-    void save(List<MultipartFile> multipartFiles);
+    
 
-    ResponseEntity rename(String oldFile, String newFile);
+   
 
-    ResponseEntity delete(String file);
+    
 
    
 

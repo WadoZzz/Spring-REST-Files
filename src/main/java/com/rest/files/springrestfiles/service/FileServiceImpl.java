@@ -18,56 +18,8 @@ import java.util.stream.Collectors;
 @Service
 public class FileServiceImpl implements IFileService {
 
-    final static Logger logger = Logger.getLogger(FileServiceImpl.class);
+   
 
-    @Value("${uploadPath}")
-    private String uploadFolder;
 
-    @Override
-    public void save(List<MultipartFile> multipartFiles) {
-        File dir = new File(uploadFolder);
-        if (!dir.exists() && !dir.mkdirs()) {
-            dir.mkdir();
-        }
-        multipartFiles.forEach(file -> {
-            File serverFile = new File(uploadFolder + File.separator + file.getOriginalFilename());
-            try (FileOutputStream stream = new FileOutputStream(serverFile)) {
-                byte[] bytes = file.getBytes();
-                stream.write(bytes);
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-                throw new RuntimeException(e);
-            }
-        });
-        logger.info("File successfully saved");
+   
     }
-
- 
-
-
-    @Override
-    public ResponseEntity<?> rename(String oldFile, String newFile) {
-        File oldFile1 = new File(uploadFolder + File.separator + oldFile);
-        File newFile2 = new File(uploadFolder + File.separator + newFile);
-        if (oldFile1.renameTo(newFile2)) {
-            logger.info("File " + oldFile + " successfully renamed to " + newFile);
-            return new ResponseEntity<>(HttpStatus.CREATED);
-        } else {
-            logger.error("File not exist");
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-    }
-
-    @Override
-    public ResponseEntity<?> delete(String file) {
-        File deleteFile = new File(uploadFolder + File.separator + file);
-        if (deleteFile.exists()) {
-            deleteFile.delete();
-        } else {
-            logger.error("File " + file + " not found");
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        logger.info("File " + file + " successfully been deleted");
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-}

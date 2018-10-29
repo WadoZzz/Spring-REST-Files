@@ -97,10 +97,18 @@ public class FileController {
 	 */
 	@DeleteMapping(value = "/{fileName}")
 	public ResponseEntity delete(@PathVariable("fileName") String file) {
-		return IFileService.delete(file);
+		File deleteFile = new File(uploadFolder + File.separator + file);
+        if (deleteFile.exists()) {
+            deleteFile.delete();
+        } else {
+            logger.error("File " + file + " not found");
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        logger.info("File " + file + " successfully been deleted");
+        return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	public void save(List<MultipartFile> multipartFiles) {
+	private void save(List<MultipartFile> multipartFiles) {
 		File dir = new File(uploadFolder);
 		if (!dir.exists() && !dir.mkdirs()) {
 			dir.mkdir();
