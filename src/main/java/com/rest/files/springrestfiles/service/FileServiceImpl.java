@@ -29,7 +29,7 @@ public class FileServiceImpl implements IFileService {
         if (!dir.exists() && !dir.mkdirs()) {
             dir.mkdir();
         }
-        for (MultipartFile file : multipartFiles) {
+        multipartFiles.forEach(file -> {
             File serverFile = new File(uploadFolder + File.separator + file.getOriginalFilename());
             try (FileOutputStream stream = new FileOutputStream(serverFile)) {
                 byte[] bytes = file.getBytes();
@@ -38,7 +38,7 @@ public class FileServiceImpl implements IFileService {
                 logger.error(e.getMessage(), e);
                 throw new RuntimeException(e);
             }
-        }
+        });
         logger.info("File successfully saved");
     }
 
